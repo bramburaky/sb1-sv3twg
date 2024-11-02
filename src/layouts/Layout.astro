@@ -1,0 +1,432 @@
+---
+interface Props {
+	title: string;
+	showMenu?: boolean;
+}
+
+const { title, showMenu = false } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Personal minimal site" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body>
+		<div class="site-title">
+			<a href="/">Welcome to my space</a>
+		</div>
+		<button id="searchBtn" class="search-btn">
+			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="11" cy="11" r="8"></circle>
+				<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+			</svg>
+		</button>
+		<div class="container">
+			{!showMenu && currentPath !== "/" && (
+				<nav class="breadcrumb">
+					<a href="/" class="home-link">Home</a>
+					<span class="separator">/</span>
+					<span class="current-page">{title}</span>
+				</nav>
+			)}
+			{showMenu && (
+				<nav class="side-nav">
+					<div class="menu">
+						<ul>
+							<li><a href="/">Home</a></li>
+							<li><a href="/thoughts">Thoughts</a></li>
+							<li><a href="/essays">Essays</a></li>
+							<li><a href="/photos">Photos</a></li>
+						</ul>
+					</div>
+				</nav>
+			)}
+			<main>
+				<slot />
+			</main>
+		</div>
+
+		<!-- Search Modal -->
+		<div id="searchModal" class="search-modal">
+			<div class="search-container">
+				<div class="search-header">
+					<input type="text" id="searchInput" placeholder="Search..." />
+					<button id="closeSearch">×</button>
+				</div>
+				<div id="searchResults" class="search-results"></div>
+			</div>
+		</div>
+	</body>
+</html>
+
+<script>
+	let searchData: any[] = [];
+	let lastScrollTop = 0;
+	const breadcrumb = document.querySelector('.breadcrumb');
+
+	window.addEventListener('scroll', () => {
+		if (!breadcrumb) return;
+		
+		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		if (scrollTop > lastScrollTop && scrollTop > 100) {
+			breadcrumb.classList.add('hidden');
+		} else {
+			breadcrumb.classList.remove('hidden');
+		}
+		lastScrollTop = scrollTop;
+	});
+
+	async function fetchSearchData() {
+		try {
+			const thoughtsResp = await fetch('/api/search.json');
+			searchData = await thoughtsResp.json();
+		} catch (error) {
+			console.error('Error fetching search data:', error);
+		}
+	}
+
+	function performSearch(query: string) {
+		if (!query) return [];
+		
+		query = query.toLowerCase();
+		return searchData.filter(item => 
+			item.title.toLowerCase().includes(query) || 
+			item.content.toLowerCase().includes(query)
+		);
+	}
+
+	const searchBtn = document.getElementById('searchBtn');
+	const searchModal = document.getElementById('searchModal');
+	const closeSearch = document.getElementById('closeSearch');
+	const searchInput = document.getElementById('searchInput');
+	const searchResults = document.getElementById('searchResults');
+
+	// Fetch search data when the page loads
+	fetchSearchData();
+
+	searchBtn?.addEventListener('click', () => {
+		searchModal?.classList.add('active');
+		searchInput?.focus();
+	});
+
+	closeSearch?.addEventListener('click', () => {
+		searchModal?.classList.remove('active');
+	});
+
+	searchModal?.addEventListener('click', (e) => {
+		if (e.target === searchModal) {
+			searchModal.classList.remove('active');
+		}
+	});
+
+	searchInput?.addEventListener('input', (e) => {
+		const value = (e.target as HTMLInputElement).value;
+		if (!searchResults) return;
+
+		if (value.length === 0) {
+			searchResults.innerHTML = '';
+			return;
+		}
+
+		const results = performSearch(value);
+		
+		if (results.length === 0) {
+			searchResults.innerHTML = '<div class="search-message">No results found</div>';
+			return;
+		}
+
+		searchResults.innerHTML = results
+			.map(result => `
+				<a href="${result.url}" class="search-result">
+					<h3>${result.title}</h3>
+					<p>${result.content.slice(0, 150)}...</p>
+					<span class="result-type">${result.type}</span>
+				</a>
+			`)
+			.join('');
+	});
+</script>
+
+<style is:global>
+	:root {
+		--text-color: #2c3e50;
+		--bg-color: #f8f9fa;
+		--accent-color: #34495e;
+	}
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	html {
+		font-family: system-ui, sans-serif;
+		background: var(--bg-color);
+		color: var(--text-color);
+	}
+	body {
+		min-height: 100vh;
+	}
+	.site-title {
+		position: fixed;
+		top: 2rem;
+		left: 2rem;
+		font-size: 1.5rem;
+		font-weight: 500;
+		z-index: 10;
+	}
+	.site-title a {
+		color: var(--accent-color);
+		text-decoration: none;
+	}
+	.site-title a:hover {
+		text-decoration: underline;
+	}
+	.search-btn {
+		position: fixed;
+		top: 2rem;
+		right: 2rem;
+		background: white;
+		border: none;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		color: var(--accent-color);
+		z-index: 100;
+		transition: transform 0.2s;
+	}
+	.search-btn:hover {
+		transform: scale(1.05);
+	}
+	.container {
+		display: grid;
+		grid-template-columns: 1fr;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 2rem;
+		gap: 2rem;
+		min-height: 100vh;
+	}
+	main {
+		display: flex;
+		justify-content: center;
+		padding: 4rem 2rem 2rem;
+		margin-left: 300px;
+	}
+	.side-nav {
+		position: fixed;
+		left: 2rem;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 250px;
+		z-index: 10;
+	}
+	.breadcrumb {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		background: rgba(255, 255, 255, 0.9);
+		padding: 0.5rem 2rem;
+		font-size: 0.9rem;
+		backdrop-filter: blur(5px);
+		z-index: 5;
+		transition: transform 0.3s ease;
+	}
+	.breadcrumb.hidden {
+		transform: translateY(-100%);
+	}
+	.breadcrumb a {
+		color: var(--accent-color);
+		text-decoration: none;
+	}
+	.breadcrumb .separator {
+		margin: 0 0.5rem;
+		color: #666;
+	}
+	.breadcrumb .current-page {
+		color: #666;
+	}
+	.menu {
+		background: white;
+		padding: 2rem;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+	.menu ul {
+		list-style: none;
+	}
+	.menu li {
+		margin: 0.8rem 0;
+	}
+	.menu a {
+		color: var(--text-color);
+		text-decoration: none;
+		transition: color 0.2s;
+		font-size: 1.1rem;
+	}
+	.menu a:hover {
+		color: var(--accent-color);
+	}
+	.search-modal {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0,0,0,0.8);
+		z-index: 1000;
+		padding: 2rem;
+	}
+	.search-modal.active {
+		display: block;
+	}
+	.search-container {
+		background: white;
+		max-width: 600px;
+		margin: 2rem auto;
+		border-radius: 8px;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	}
+	.search-header {
+		display: flex;
+		padding: 1rem;
+		border-bottom: 1px solid rgba(0,0,0,0.1);
+	}
+	#searchInput {
+		flex: 1;
+		padding: 0.5rem;
+		border: none;
+		font-size: 1.1rem;
+		outline: none;
+	}
+	#closeSearch {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		padding: 0 0.5rem;
+		color: var(--accent-color);
+	}
+	.search-results {
+		padding: 1rem;
+		max-height: 400px;
+		overflow-y: auto;
+	}
+	.search-message {
+		color: #666;
+		text-align: center;
+		padding: 1rem;
+	}
+	.search-result {
+		display: block;
+		padding: 1rem;
+		border-bottom: 1px solid rgba(0,0,0,0.1);
+		text-decoration: none;
+		color: inherit;
+	}
+	.search-result:hover {
+		background: rgba(0,0,0,0.02);
+	}
+	.search-result h3 {
+		color: var(--accent-color);
+		margin-bottom: 0.5rem;
+	}
+	.search-result p {
+		font-size: 0.9rem;
+		color: #666;
+		margin-bottom: 0.5rem;
+	}
+	.result-type {
+		font-size: 0.8rem;
+		color: var(--accent-color);
+		font-weight: 500;
+	}
+
+	@media (max-width: 1024px) {
+		main {
+			margin-left: 0;
+			padding: 6rem 1rem 2rem;
+		}
+		.site-title {
+			position: fixed;
+			top: 1rem;
+			left: 1rem;
+			font-size: 1.2rem;
+		}
+		.search-btn {
+			top: 1rem;
+			right: 1rem;
+		}
+		.side-nav {
+			position: fixed;
+			left: 50%;
+			transform: translateX(-50%);
+			width: auto;
+			bottom: 2rem;
+			top: auto;
+		}
+		.menu {
+			padding: 1rem 2rem;
+		}
+		.menu ul {
+			display: flex;
+			gap: 1.5rem;
+		}
+		.menu li {
+			margin: 0;
+		}
+		.menu a {
+			font-size: 1rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.container {
+			padding: 1rem;
+		}
+		.menu ul {
+			gap: 1rem;
+		}
+		.menu a {
+			font-size: 0.9rem;
+		}
+		.search-container {
+			margin: 1rem;
+		}
+		.breadcrumb {
+			padding: 0.5rem 1rem;
+			font-size: 0.8rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.site-title {
+			font-size: 1rem;
+		}
+		.menu {
+			padding: 0.8rem 1.5rem;
+		}
+		.menu ul {
+			gap: 0.8rem;
+		}
+		.menu a {
+			font-size: 0.8rem;
+		}
+		main {
+			padding: 5rem 0.5rem 4rem;
+		}
+	}
+</style>

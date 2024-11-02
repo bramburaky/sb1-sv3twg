@@ -1,0 +1,62 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Il mio primo pensiero">
+    <article class="thought-content">
+        <h1>Il mio primo pensiero</h1>
+        <div class="metadata">
+            <span class="date">16 Aprile 2024</span>
+            <span class="reading-time">3 min read</span>
+        </div>
+        <div class="content">
+            <p>
+                Qui puoi scrivere il tuo pensiero. Puoi usare paragrafi multipli.
+            </p>
+            
+            <p>
+                Supporta anche liste:
+            </p>
+            
+            <ul>
+                <li>Primo punto</li>
+                <li>Secondo punto</li>
+                <li>Terzo punto</li>
+            </ul>
+            
+            <p>
+                E puoi continuare ad aggiungere più contenuto...
+            </p>
+        </div>
+    </article>
+</Layout>
+
+<style>
+    .thought-content {
+        max-width: 700px;
+    }
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--accent-color);
+    }
+    .metadata {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    .content {
+        line-height: 1.8;
+    }
+    .content p {
+        margin-bottom: 1.5rem;
+    }
+    .content ul {
+        margin: 1rem 0 1.5rem 2rem;
+    }
+    .content li {
+        margin-bottom: 0.5rem;
+    }
+</style>

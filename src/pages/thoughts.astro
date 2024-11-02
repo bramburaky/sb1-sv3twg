@@ -1,0 +1,82 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Thoughts">
+	<div class="thoughts">
+		<h1>Thoughts</h1>
+		<div class="thought-list">
+			<article class="thought">
+				<h2>Digital Minimalism</h2>
+				<div class="metadata">
+					<span class="date">April 12, 2024</span>
+					<span class="reading-time">5 min read</span>
+				</div>
+				<p>
+					In a world of constant notifications and endless scrolling, I've been exploring the concept of digital minimalism. 
+					It's not about completely disconnecting, but rather about being intentional with our digital interactions...
+				</p>
+				<a href="/thoughts/digital-minimalism" class="read-more">Read more →</a>
+			</article>
+
+			<article class="thought">
+				<h2>The Art of Slow Living</h2>
+				<div class="metadata">
+					<span class="date">April 5, 2024</span>
+					<span class="reading-time">4 min read</span>
+				</div>
+				<p>
+					Lately, I've been contemplating the beauty of slowing down. In our fast-paced world, there's something 
+					revolutionary about choosing to live life at a more deliberate pace...
+				</p>
+				<a href="/thoughts/slow-living" class="read-more">Read more →</a>
+			</article>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.thoughts {
+		max-width: 700px;
+	}
+	h1 {
+		font-size: 2.5rem;
+		margin-bottom: 2rem;
+		color: var(--accent-color);
+	}
+	.thought-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+	.thought {
+		background: white;
+		padding: 1.5rem;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+	.thought h2 {
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
+		color: var(--accent-color);
+	}
+	.metadata {
+		display: flex;
+		gap: 1rem;
+		font-size: 0.9rem;
+		color: #666;
+		margin-bottom: 1rem;
+	}
+	.thought p {
+		line-height: 1.6;
+		margin-bottom: 1rem;
+	}
+	.read-more {
+		color: var(--accent-color);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.read-more:hover {
+		text-decoration: underline;
+	}
+</style>

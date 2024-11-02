@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const thoughts = await getCollection('thoughts');
+const sortedContent = thoughts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const latestContent = sortedContent.slice(0, 3);
+---
+
+<Layout title="Home" showMenu={true}>
+	<div class="home">
+		<div class="latest">
+			<h2>Latest Updates</h2>
+			<div class="updates">
+				{latestContent.map(post => (
+					<article class="update">
+						<span class="date">
+							{post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+						</span>
+						<h3><a href={`/thoughts/${post.slug}`}>{post.data.title}</a></h3>
+						<p class="excerpt">{post.body.slice(0, 150)}...</p>
+					</article>
+				))}
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.home {
+		width: 100%;
+		max-width: 800px;
+	}
+	.latest {
+		margin-top: 2rem;
+	}
+	.latest h2 {
+		font-size: 1.5rem;
+		margin-bottom: 1.5rem;
+		color: var(--accent-color);
+	}
+	.updates {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+	.update {
+		padding: 1.5rem;
+		background: white;
+		border-radius: 6px;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+	}
+	.date {
+		display: block;
+		font-size: 0.9rem;
+		color: #666;
+		margin-bottom: 0.5rem;
+	}
+	h3 {
+		margin-bottom: 0.75rem;
+	}
+	a {
+		color: var(--accent-color);
+		text-decoration: none;
+		font-weight: 500;
+		font-size: 1.2rem;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+	.excerpt {
+		color: var(--text-color);
+		line-height: 1.6;
+	}
+</style></content>

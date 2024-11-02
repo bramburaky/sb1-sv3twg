@@ -1,0 +1,79 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const essays = await getCollection('essays');
+const sortedEssays = essays.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<Layout title="Essays">
+	<div class="essays">
+		<h1>Essays</h1>
+		<div class="essay-list">
+			{sortedEssays.map(essay => (
+				<article class="essay">
+					<h2>{essay.data.title}</h2>
+					<div class="metadata">
+						<span class="date">
+							{essay.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+						</span>
+						<span class="category">{essay.data.category}</span>
+						<span class="reading-time">{essay.data.readingTime}</span>
+					</div>
+					<p class="excerpt">{essay.body.slice(0, 200)}...</p>
+					<a href={`/essays/${essay.slug}`} class="read-more">Continue reading →</a>
+				</article>
+			))}
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.essays {
+		max-width: 700px;
+	}
+	h1 {
+		font-size: 2.5rem;
+		margin-bottom: 2rem;
+		color: var(--accent-color);
+	}
+	.essay-list {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+	.essay {
+		background: white;
+		padding: 2rem;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+	.essay h2 {
+		font-size: 1.8rem;
+		margin-bottom: 0.5rem;
+		color: var(--accent-color);
+	}
+	.metadata {
+		display: flex;
+		gap: 1rem;
+		font-size: 0.9rem;
+		color: #666;
+		margin-bottom: 1rem;
+	}
+	.category {
+		color: var(--accent-color);
+		font-weight: 500;
+	}
+	.excerpt {
+		line-height: 1.8;
+		margin-bottom: 1.5rem;
+	}
+	.read-more {
+		color: var(--accent-color);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.read-more:hover {
+		text-decoration: underline;
+	}
+</style>
